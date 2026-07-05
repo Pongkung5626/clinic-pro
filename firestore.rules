@@ -1,0 +1,221 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Global Safety Net
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && (
+        request.auth.token.get('email_verified', false) == true || 
+        request.auth.token.firebase.get('sign_in_provider', '') == 'anonymous' ||
+        request.auth.token.firebase.get('sign_in_provider', '') == 'google.com' ||
+        request.auth.token.firebase.get('sign_in_provider', '') == 'google' ||
+        request.auth.token.get('email', '') == "pong.astro@gmail.com"
+      );
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.get('email', '') == "pong.astro@gmail.com" ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ===============================================================
+    // Validation Blueprints (Harden checks to prevent evaluation errors)
+    // ===============================================================
+
+    function isValidPatient(data) {
+      return data.hn is string &&
+             data.firstName is string &&
+             data.lastName is string;
+    }
+
+    function isValidVisit(data) {
+      return data.patientId is string &&
+             data.date is string &&
+             data.status is string;
+    }
+
+    function isValidDrug(data) {
+      return data.name is string &&
+             data.stock is number &&
+             data.price is number &&
+             data.unit is string;
+    }
+
+    function isValidSupply(data) {
+      return data.name is string &&
+             data.stock is number &&
+             data.price is number &&
+             data.unit is string;
+    }
+
+    function isValidProcedure(data) {
+      return data.name is string &&
+             data.price is number;
+    }
+
+    function isValidLabTest(data) {
+      return data.name is string &&
+             data.price is number;
+    }
+
+    function isValidCheckupProgram(data) {
+      return data.name is string &&
+             data.totalPrice is number;
+    }
+
+    function isValidUser(data) {
+       return data.username is string &&
+              data.role is string &&
+              data.fullName is string;
+    }
+
+    function isValidTransaction(data) {
+      return data.date is string &&
+             data.type is string &&
+             data.amount is number;
+    }
+
+    // ===============================================================
+    // Collection Rules (Optimized and secured)
+    // ===============================================================
+
+    match /patients/{patientId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidPatient(incoming()) && isValidId(patientId);
+      allow update: if isSignedIn() && isValidPatient(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /visits/{visitId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidVisit(incoming()) && isValidId(visitId);
+      allow update: if isSignedIn() && isValidVisit(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /drugs/{drugId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidDrug(incoming()) && isValidId(drugId);
+      allow update: if isSignedIn() && isValidDrug(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /supplies/{supplyId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidSupply(incoming()) && isValidId(supplyId);
+      allow update: if isSignedIn() && isValidSupply(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /procedures/{procedureId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidProcedure(incoming()) && isValidId(procedureId);
+      allow update: if isSignedIn() && isValidProcedure(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /labTests/{labTestId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidLabTest(incoming()) && isValidId(labTestId);
+      allow update: if isSignedIn() && isValidLabTest(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /checkupPrograms/{programId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidCheckupProgram(incoming()) && isValidId(programId);
+      allow update: if isSignedIn() && isValidCheckupProgram(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidTransaction(incoming()) && isValidId(transactionId);
+      allow update: if isSignedIn() && isValidTransaction(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(appointmentId);
+    }
+
+    match /requisitions/{requisitionId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(requisitionId);
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidUser(incoming()) && isValidId(userId);
+      allow update: if (isAdmin() || (isSignedIn() && request.auth.uid == userId)) && isValidUser(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /dailyCloses/{dcId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(dcId);
+    }
+
+    match /clinicInfo/{infoId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /fixedExpenses/{feId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(feId);
+    }
+
+    match /stockLogs/{logId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(logId);
+    }
+
+    match /staff/{staffId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /salaryPayments/{spId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /attendances/{atId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

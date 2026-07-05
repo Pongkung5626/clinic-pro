@@ -1,0 +1,304 @@
+{
+  "entities": {
+    "Patient": {
+      "title": "Patient",
+      "description": "Patient registration information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "hn": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "idCard": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "phone": { "type": "string" },
+        "gender": { "type": "string", "enum": ["M", "F", "Other"] },
+        "allergicDrugs": { "type": "array", "items": { "type": "string" } },
+        "address": { "type": "string" },
+        "chronicDiseases": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "hn", "firstName", "lastName", "idCard"]
+    },
+    "Visit": {
+      "title": "Visit",
+      "description": "Patient visit record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "patientId": { "type": "string" },
+        "date": { "type": "string" },
+        "queueNumber": { "type": "number" },
+        "status": { "type": "string", "enum": ["Waiting", "Triage", "Examination", "Pharmacy", "Billing", "Completed", "Cancelled"] },
+        "chiefComplaint": { "type": "string" },
+        "vitalSigns": {
+          "type": "object",
+          "properties": {
+            "weight": { "type": "number" },
+            "height": { "type": "number" },
+            "temperature": { "type": "number" },
+            "bpSystolic": { "type": "number" },
+            "bpDiastolic": { "type": "number" },
+            "pulse": { "type": "number" },
+            "rr": { "type": "number" },
+            "spo2": { "type": "number" }
+          }
+        },
+        "diagnosis": { "type": "string" },
+        "doctorNotes": { "type": "string" },
+        "prescriptions": { "type": "array", "items": { "$ref": "PrescriptionItem" } },
+        "procedures": { "type": "array", "items": { "$ref": "ProcedureItem" } },
+        "labOrders": { "type": "array", "items": { "$ref": "LabOrderItem" } },
+        "totalAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["Pending", "Paid"] }
+      },
+      "required": ["id", "patientId", "date", "status"]
+    },
+    "PrescriptionItem": {
+      "title": "PrescriptionItem",
+      "description": "Item in a prescription",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "drugId": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "unit": { "type": "string" },
+        "pricePerUnit": { "type": "number" },
+        "instruction": { "type": "string" }
+      }
+    },
+    "ProcedureItem": {
+      "title": "ProcedureItem",
+      "description": "Item in a procedure list",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "procedureId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "discount": { "type": "number" }
+      }
+    },
+    "LabOrderItem": {
+      "title": "LabOrderItem",
+      "description": "Item in a lab order list",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "labTestId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "result": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Completed"] }
+      }
+    },
+    "Drug": {
+      "title": "Drug",
+      "description": "Drug inventory item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "price": { "type": "number" },
+        "unit": { "type": "string" },
+        "instruction": { "type": "string" }
+      },
+      "required": ["id", "name", "stock", "price", "unit"]
+    },
+    "Supply": {
+      "title": "Supply",
+      "description": "Medical supply inventory item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "price": { "type": "number" },
+        "unit": { "type": "string" }
+      },
+      "required": ["id", "name", "stock", "price", "unit"]
+    },
+    "Procedure": {
+      "title": "Procedure",
+      "description": "Medical procedure definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "costPrice": { "type": "number" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "LabTest": {
+      "title": "LabTest",
+      "description": "Lab test definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "costPrice": { "type": "number" },
+        "category": { "type": "string" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "CheckupProgram": {
+      "title": "CheckupProgram",
+      "description": "Checkup program definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "minAge": { "type": "number" },
+        "maxAge": { "type": "number" },
+        "labTestIds": { "type": "array", "items": { "type": "string" } },
+        "procedureIds": { "type": "array", "items": { "type": "string" } },
+        "totalPrice": { "type": "number" },
+        "totalCost": { "type": "number" }
+      },
+      "required": ["id", "name", "totalPrice"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "type": { "type": "string", "enum": ["Income", "Expense"] },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "visitId": { "type": "string" }
+      },
+      "required": ["id", "date", "type", "amount"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Patient appointment record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "patientId": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "purpose": { "type": "string" },
+        "status": { "type": "string", "enum": ["Scheduled", "Completed", "Cancelled"] },
+        "patientName": { "type": "string" },
+        "patientPhone": { "type": "string" }
+      },
+      "required": ["id", "patientId", "date", "time", "status"]
+    },
+    "RequisitionItem": {
+      "title": "RequisitionItem",
+      "description": "Individual item in a requisition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemType": { "type": "string", "enum": ["Drug", "Supply"] },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "unit": { "type": "string" },
+        "costPrice": { "type": "number" },
+        "totalCost": { "type": "number" }
+      },
+      "required": ["id", "itemId", "itemType", "amount"]
+    },
+    "Requisition": {
+      "title": "Requisition",
+      "description": "Inventory requisition record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "requesterId": { "type": "string" },
+        "requesterName": { "type": "string" },
+        "items": { "type": "array", "items": { "$ref": "RequisitionItem" } },
+        "totalCost": { "type": "number" },
+        "status": { "type": "string", "enum": ["Completed", "Cancelled"] },
+        "note": { "type": "string" }
+      },
+      "required": ["id", "date", "items", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "System user account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Doctor", "Nurse", "Staff"] },
+        "fullName": { "type": "string" },
+        "password": { "type": "string" },
+        "licenseNumber": { "type": "string" }
+      },
+      "required": ["id", "username", "role", "fullName"]
+    },
+    "ClinicInfo": {
+      "title": "ClinicInfo",
+      "description": "Clinic general information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "taxId": { "type": "string" },
+        "logo": { "type": "string" },
+        "smartCardAgentUrl": { "type": "string" }
+      },
+      "required": ["name", "address", "phone"]
+    },
+    "FixedExpense": {
+      "title": "FixedExpense",
+      "description": "Fixed monthly expense item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" }
+      },
+      "required": ["id", "name", "amount"]
+    },
+    "StockLog": {
+      "title": "StockLog",
+      "description": "Log of drug or supply stock additions and reductions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "itemType": { "type": "string", "enum": ["Drug", "Supply"] },
+        "changeAmount": { "type": "number" },
+        "previousStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "type": { "type": "string", "enum": ["addition", "reduction", "requisition", "pharmacy_dispense", "direct_sale", "delete_item", "edit_item"] },
+        "note": { "type": "string" },
+        "user": { "type": "string" }
+      },
+      "required": ["id", "date", "itemId", "itemName", "changeAmount", "type"]
+    }
+  },
+  "firestore": {
+    "/patients/{patientId}": { "schema": "Patient", "description": "Patient records" },
+    "/visits/{visitId}": { "schema": "Visit", "description": "Visit records" },
+    "/drugs/{drugId}": { "schema": "Drug", "description": "Drug inventory" },
+    "/supplies/{supplyId}": { "schema": "Supply", "description": "Supply inventory" },
+    "/procedures/{procedureId}": { "schema": "Procedure", "description": "Procedure definitions" },
+    "/labTests/{labTestId}": { "schema": "LabTest", "description": "Lab test definitions" },
+    "/checkupPrograms/{programId}": { "schema": "CheckupProgram", "description": "Checkup programs" },
+    "/transactions/{transactionId}": { "schema": "Transaction", "description": "Financial transactions" },
+    "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Patient appointments" },
+    "/requisitions/{requisitionId}": { "schema": "Requisition", "description": "Inventory requisitions" },
+    "/users/{userId}": { "schema": "User", "description": "System users" },
+    "/clinicInfo/main": { "schema": "ClinicInfo", "description": "Clinic profile" },
+    "/fixedExpenses/{feId}": { "schema": "FixedExpense", "description": "Fixed monthly expenses" },
+    "/stockLogs/{logId}": { "schema": "StockLog", "description": "Stock transaction history logs" }
+  }
+}

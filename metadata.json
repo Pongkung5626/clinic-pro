@@ -1,0 +1,9 @@
+{
+  "name": "Clinic Pro",
+  "description": "A comprehensive clinic management system featuring patient triage, doctor examination, pharmacy, billing, inventory requisition with stock management, and accounting with tax calculation.",
+  "requestFramePermissions": [
+    "camera",
+    "usb",
+    "smartcard"
+  ]
+}
